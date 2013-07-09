@@ -5,6 +5,7 @@ package nitro
 //#include "wrapper.h"
 import "C"
 import "unsafe"
+import "errors"
 
 type NitroFrame *C.nitro_frame_t
 type NitroSocket *C.nitro_socket_t
@@ -14,22 +15,36 @@ func Start() {
 	C.nitro_runtime_start()
 }
 
-func Bind(location string) NitroSocket {
-	opt := C.nitro_sockopt_new()
-	return (NitroSocket)(C.nitro_socket_bind(C.CString(location), opt))
+func NitroError() error {
+	e := C.nitro_error()
+	msg := C.GoString(C.nitro_errmsg(e))
+	return errors.New(msg)
 }
 
-func Connect(location string) NitroSocket {
+func Bind(location string) (NitroSocket, error) {
 	opt := C.nitro_sockopt_new()
-	return (NitroSocket)(C.nitro_socket_connect(C.CString(location), opt))
+	if opt == nil {
+		return nil, NitroError()
+	}
+	return (NitroSocket)(C.nitro_socket_bind(C.CString(location), opt)), nil
 }
 
+func Connect(location string) (NitroSocket, error) {
+	opt := C.nitro_sockopt_new()
+	if opt == nil {
+		return nil, NitroError()
+	}
+	return (NitroSocket)(C.nitro_socket_connect(C.CString(location), opt)), nil
+}
+
+// add fininalizer to destroy nitro frame
 func BytesToFrame(b []byte) NitroFrame {
 	unsafePtr := unsafe.Pointer(&b[0])
 	size := C.uint32_t(len(b))
 	return (NitroFrame)(C.nitro_frame_new_copy(unsafePtr, size))
 }
 
+// make a copy of the bytestring
 func FrameToBytes(f NitroFrame) []byte {
 	cframe := (*C.nitro_frame_t)(f)
 	unsafePtr := C.nitro_frame_data(cframe)
@@ -37,10 +52,19 @@ func FrameToBytes(f NitroFrame) []byte {
 	return C.GoBytes(unsafePtr,size)
 }
 
-func Send(f NitroFrame, s NitroSocket, flags int) {
-	C.nitro_send_((*C.nitro_frame_t)(f), (*C.nitro_socket_t)(s), C.int(flags))
+func Send(f NitroFrame, s NitroSocket, flags int) error {
+	e := C.nitro_send_((*C.nitro_frame_t)(f), (*C.nitro_socket_t)(s), C.int(flags))
+	if e < 0 {
+		return NitroError()
+	}
+	return nil
 }
 
-func Recv(s NitroSocket, flags int) NitroFrame {
-	return (NitroFrame)(C.nitro_recv_((*C.nitro_socket_t)(s), C.int(flags)))
+// add finalizer to destroy nitro frame
+func Recv(s NitroSocket, flags int) (NitroFrame, error) {
+	f := (NitroFrame)(C.nitro_recv_((*C.nitro_socket_t)(s), C.int(flags)))
+	if f == nil {
+		return nil, NitroError()
+	}
+	return f, nil
 }
