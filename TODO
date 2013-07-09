@@ -1,5 +1,6 @@
-[ ] Moar error checking
-[ ] Relay/Reply
+[X] Moar error checking
+[X] Do GC correctly
+[X] Relay/Reply
 [ ] Pub/Sub
 [ ] Socket options
 [ ] docs
