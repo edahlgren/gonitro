@@ -19,6 +19,7 @@ RUN EXAMPLE
 ```
 go install github.com/edahlgren/gonitro/example
 $GOPATH/bin/example
+```
 
 RUN TESTS
 ----------
