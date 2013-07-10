@@ -137,3 +137,33 @@ func RelayBk(s NitroSocket, recvd NitroFrame, resp NitroFrame) error {
 	return nil
 }
 
+func Subscribe(s NitroSocket, channel []byte) error {
+	sptr := (*C.nitro_socket_t)(s)
+	channelptr := (*C.uint8_t)(&channel[0])
+	channelsize := C.size_t(len(channel))
+	e := C.nitro_sub_(sptr, channelptr, channelsize)
+	if e < 0 {
+		return NitroError()
+	}
+	return nil
+}
+
+func Unsubscribe(s NitroSocket, channel []byte) error {
+	sptr := (*C.nitro_socket_t)(s)
+	channelptr := (*C.uint8_t)(&channel[0])
+	channelsize := C.size_t(len(channel))
+	e := C.nitro_unsub_(sptr, channelptr, channelsize)
+	if e < 0 {
+		return NitroError()
+	}
+	return nil
+}
+
+func Publish(s NitroSocket, f NitroFrame, channel []byte) int {
+	fptr := (*C.nitro_frame_t)(f.ptr)
+	sptr := (*C.nitro_socket_t)(s)
+	channelptr := (*C.uint8_t)(&channel[0])
+	channelsize := C.size_t(len(channel))
+	subs := C.nitro_pub_(fptr, channelptr, channelsize, sptr, C.int(REUSE))
+	return int(subs)
+}

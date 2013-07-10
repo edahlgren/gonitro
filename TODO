@@ -1,6 +1,7 @@
 [X] Moar error checking
 [X] Do GC correctly
 [X] Relay/Reply
-[ ] Pub/Sub
+[X] Pub/Sub
 [ ] Socket options
+[X] chan example
 [ ] docs

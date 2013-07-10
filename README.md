@@ -14,9 +14,15 @@ go get github.com/edahlgren/gonitro
 go install github.com/edahlgren/gonitro
 ```
 
+RUN EXAMPLE
+----------
+```
+go install github.com/edahlgren/gonitro/example
+$GOPATH/bin/example
+
 RUN TESTS
 ----------
 ```
 go install github.com/edahlgren/gonitro/test
-$GOPATH/bin/test_nitro
+$GOPATH/bin/test
 ```

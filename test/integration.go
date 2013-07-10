@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"github.com/edahlgren/gonitro"
 )
 
@@ -24,6 +25,8 @@ func main() {
 	fmt.Printf("ok: testReply passed\n")
 	testRelay(bind, connect)
 	fmt.Printf("ok: testRelay passed\n")
+	testPubSub(bind, connect)
+	fmt.Printf("ok: testPubSub passed\n")
 }
 
 func testSendReceive(bind nitro.NitroSocket, connect nitro.NitroSocket) {
@@ -165,4 +168,32 @@ func RelayHelper(bind nitro.NitroSocket, connect nitro.NitroSocket, fwbind nitro
 }
 
 
+func testPubSub(bind nitro.NitroSocket, connect nitro.NitroSocket) {
+	msg := "You don't understand! I coulda had class"
+	msgSub, e := PubSub(bind, connect, msg)
+	if e != nil {
+		panic(e.Error())
+	}
+	if msg != msgSub {
+		panic("PubSub: strings don't match")
+	}
+}
 
+func PubSub(bind nitro.NitroSocket, connect nitro.NitroSocket, msg string) (string, error) {
+	channel := []byte("con")
+	e := nitro.Subscribe(connect, channel)
+	if e != nil {
+		return "", e
+	}
+	fmt.Printf("... subscribing to \"%v\" ...\n", string(channel))
+	time.Sleep(1 * time.Second)
+
+	frame := nitro.BytesToFrame([]byte(msg))
+	nitro.Publish(bind, frame, channel)
+
+	frameSub, e := nitro.Recv(connect, nitro.WAIT)
+	if e != nil {
+		return "", e
+	}
+	return string(nitro.FrameToBytes(frameSub)), nil
+}
