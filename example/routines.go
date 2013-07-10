@@ -73,5 +73,5 @@ func client(location string) {
 		fmt.Printf("client: %v\n", e.Error())
 	}
 	msgBack := nitro.FrameToBytes(f)
-	fmt.Printf("server things %v is %v bytes long\n", string(msg), string(msgBack))
+	fmt.Printf("server thinks %v is %v bytes long\n", string(msg), string(msgBack))
 }
